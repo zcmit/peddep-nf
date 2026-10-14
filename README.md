@@ -104,7 +104,7 @@ Per-task ceilings: `--max_cpus`, `--max_memory`, `--max_time` on the command lin
 └── <sample>/                       # or the samplesheet's outdir
     ├── <sample>.atac_qc_report.txt / .html / .atac_qc_metrics.json
     ├── BAM_files/                  # <sample>.filtered.bam, <sample>.filtered.tn5.bam (+ .bai)
-    ├── PEAKS/NARROW_peaks/         # _peaks.narrowPeak, _summits.bed, _peaks.xls
+    ├── PEAKS/NARROW_peaks/         # _peaks.narrowPeak, _summits.bed, _peaks.xls, _peaks.bed.gz + .tbi (browser track)
     ├── PEAKS/BROAD_peaks/          # _peaks.broadPeak, _peaks.gappedPeak, _peaks.xls
     ├── COVERAGE_files/             # .fragments.CPM.bw, .tn5_insertions.CPM.bw
     └── QC/
@@ -112,6 +112,10 @@ Per-task ceilings: `--max_cpus`, `--max_memory`, `--max_time` on the command lin
         ├── library_complexity/     peaks/ (FRiP)  Fragments/   TSS/
         └── ataqv/                  fingerprint/
 ```
+
+### Genome-browser tracks
+
+Each sample has two files ready for IGV or a ProteinPaint display: `COVERAGE_files/<sample>.fragments.CPM.bw` (bigwig track) and `PEAKS/NARROW_peaks/<sample>_peaks.bed.gz` with its `.tbi` (bedj track, sorted 3-column BED). They take the place of the WDL pipeline's `<sample>.sorted.bklist.rmdup.w50.FPM.bw` and `<sample>.sorted.bklist_p9_kd-auto_peaks.bed.gz`. For a new sample, copy the two files (plus the `.tbi`) and point the display's `file` entries at the new names. `<sample>.tn5_insertions.CPM.bw` is an extra 1-bp Tn5 insertion track for footprint-level views.
 
 Optional: `--save_markdup_bam`, `--save_trimmed`, `--save_reference`; `--save_tn5_bam false` skips publishing the shifted BAM.
 
@@ -161,6 +165,7 @@ This keeps the grading scheme of the PEDDEP/SEAseq reports. Each graded metric s
 | Local executor + Singularity (one 8-core node) | `-profile test,singularity` (49 tasks, ~3.5 min); re-run with `-resume` | pass; all 49 tasks cached on resume |
 | LSF via the nf-core `stjude` institutional profile | `-profile test,stjude` | pass; results identical to the local run |
 | LSF + Singularity, human data | 4 PEDDEP ATAC samples, GRCh38, local site config | see [Comparison with the WDL pipeline](#comparison-with-the-wdl-pipeline) |
+| GitHub Actions, Docker (`ubuntu-latest`) | lint, stub, `-profile test,docker` on Nextflow 24.10.2 and latest | pass |
 | SLURM, SGE, PBS, AWS/Google/Azure Batch | example configs only | **not yet tested** |
 
 ## Comparison with the WDL pipeline

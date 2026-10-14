@@ -18,6 +18,7 @@ include { TN5_SHIFT                                     } from '../modules/local
 include { MACS3_CALLPEAK as MACS3_NARROW                } from '../modules/local/macs3_callpeak'
 include { MACS3_CALLPEAK as MACS3_BROAD                 } from '../modules/local/macs3_callpeak'
 include { FRIP                                          } from '../modules/local/frip'
+include { BROWSER_PEAKS                                 } from '../modules/local/browser_peaks'
 include { DEEPTOOLS_BAMCOVERAGE as BIGWIG_FRAGMENTS     } from '../modules/local/deeptools_bamcoverage'
 include { DEEPTOOLS_BAMCOVERAGE as BIGWIG_INSERTIONS    } from '../modules/local/deeptools_bamcoverage'
 include { DEEPTOOLS_TSS_PLOTS                           } from '../modules/local/deeptools_tss_plots'
@@ -92,6 +93,7 @@ workflow ATAC {
     }
 
     FRIP(ch_filtered.join(MACS3_NARROW.out.peak))
+    BROWSER_PEAKS(MACS3_NARROW.out.peak)
     BIGWIG_FRAGMENTS(ch_filtered)
     BIGWIG_INSERTIONS(TN5_SHIFT.out.bam)
     ch_versions = ch_versions
@@ -100,6 +102,7 @@ workflow ATAC {
         .mix(TN5_SHIFT.out.versions)
         .mix(MACS3_NARROW.out.versions)
         .mix(FRIP.out.versions)
+        .mix(BROWSER_PEAKS.out.versions)
         .mix(BIGWIG_FRAGMENTS.out.versions)
         .mix(BIGWIG_INSERTIONS.out.versions)
 
