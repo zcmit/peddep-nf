@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nf-core/setup-nextflow@v2
+        with:
+          version: "latest-stable"
+      - name: nextflow lint
+        run: nextflow lint .
+
+  test:
+    name: test (${{ matrix.mode }}, Nextflow ${{ matrix.NXF_VER }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        NXF_VER: ["24.10.2", "latest-stable"]
+        mode: ["stub", "docker"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nf-core/setup-nextflow@v2
+        with:
+          version: ${{ matrix.NXF_VER }}
+      - name: Stub run (workflow wiring only)
+        if: matrix.mode == 'stub'
+        run: nextflow run . -profile test -stub --outdir results -ansi-log false
+      - name: Test run (yeast data, Docker)
+        if: matrix.mode == 'docker'
+        run: nextflow run . -profile test,docker --outdir results -ansi-log false
+      - name: Show QC summary
+        if: matrix.mode == 'docker'
+        run: cat results/atac_qc_summary.tsv
