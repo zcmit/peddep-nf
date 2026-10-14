@@ -14,7 +14,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: nf-core/setup-nextflow@v2
         with:
           version: "latest-stable"
@@ -30,7 +30,7 @@ jobs:
         NXF_VER: ["24.10.2", "latest-stable"]
         mode: ["stub", "docker"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: nf-core/setup-nextflow@v2
         with:
           version: ${{ matrix.NXF_VER }}
@@ -43,3 +43,11 @@ jobs:
       - name: Show QC summary
         if: matrix.mode == 'docker'
         run: cat results/atac_qc_summary.tsv
+      # Job logs need admin rights to download; annotations are public, so surface the error there
+      - name: Report Nextflow error
+        if: failure()
+        run: |
+          msg=$(grep -A 60 'ERROR ~' .nextflow.log | head -80 || true)
+          [ -n "$msg" ] || msg=$(tail -n 40 .nextflow.log)
+          msg="${msg//'%'/'%25'}"; msg="${msg//$'\r'/'%0D'}"; msg="${msg//$'\n'/'%0A'}"
+          echo "::error title=Nextflow run failed::${msg}"
