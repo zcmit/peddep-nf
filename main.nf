@@ -1,0 +1,31 @@
+#!/usr/bin/env nextflow
+/*
+========================================================================================
+    zcmit/peddep-nf
+    Portable Nextflow pipelines for PEDDEP epigenomic assays
+    https://github.com/zcmit/peddep-nf
+========================================================================================
+*/
+
+include { ATAC                                        } from './workflows/atac'
+include { parseSamplesheet; validateParameters; helpMessage } from './subworkflows/local/utils'
+
+workflow {
+    main:
+    if (params.help) {
+        log.info(helpMessage())
+    } else {
+        validateParameters()
+
+        log.info """
+        zcmit/peddep-nf v${workflow.manifest.version}  (assay: ${params.assay})
+          input   : ${params.input}
+          outdir  : ${params.outdir}
+          genome  : ${params.genome ?: params.fasta}
+          profile : ${workflow.profile}
+          workDir : ${workflow.workDir}
+        """.stripIndent()
+
+        ATAC(channel.fromList(parseSamplesheet(params.input)))
+    }
+}

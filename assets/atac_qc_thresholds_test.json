@@ -1,0 +1,102 @@
+{
+    "_comment": "Test-profile cutoffs: same as atac_qc_thresholds.json but scaled for the tiny yeast dataset (100k read pairs, 12 Mb genome).",
+    "Raw_Read_Pairs": {
+        "type": "higher",
+        "cutoffs": [
+            50000,
+            100000,
+            150000,
+            200000
+        ]
+    },
+    "Base_Quality": {
+        "type": "status"
+    },
+    "Sequence_Diversity": {
+        "type": "status"
+    },
+    "Pct_Reads_Q30": {
+        "type": "higher",
+        "cutoffs": [
+            60,
+            70,
+            75,
+            80
+        ]
+    },
+    "Aligned_Percent": {
+        "type": "higher",
+        "cutoffs": [
+            50,
+            60,
+            70,
+            80
+        ]
+    },
+    "Mito_Percent": {
+        "type": "lower",
+        "cutoffs": [
+            40,
+            20,
+            10,
+            5
+        ]
+    },
+    "NRF": {
+        "type": "higher",
+        "cutoffs": [
+            0.5,
+            0.6,
+            0.7,
+            0.8
+        ]
+    },
+    "PBC1": {
+        "type": "higher",
+        "cutoffs": [
+            0.5,
+            0.66,
+            0.75,
+            0.9
+        ]
+    },
+    "PBC2": {
+        "type": "higher",
+        "cutoffs": [
+            1,
+            1,
+            3,
+            3
+        ]
+    },
+    "Nucleosome_Pattern": {
+        "type": "status"
+    },
+    "TSS_Enrichment": {
+        "type": "higher",
+        "cutoffs": [
+            3,
+            5,
+            7,
+            10
+        ]
+    },
+    "FRiP": {
+        "type": "higher",
+        "cutoffs": [
+            0.1,
+            0.15,
+            0.2,
+            0.3
+        ]
+    },
+    "Total_Peaks": {
+        "type": "higher",
+        "cutoffs": [
+            100,
+            200,
+            500,
+            1000
+        ]
+    }
+}

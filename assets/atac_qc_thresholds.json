@@ -1,0 +1,16 @@
+{
+    "_comment": "Score cutoffs for the PEDDEP graded ATAC-seq QC report. 'higher': value >= cutoffs[i] earns -1, 0, +1, +2 (below the first cutoff = -2). 'lower': value <= cutoffs[i] earns -1, 0, +1, +2 (above the first cutoff = -2). 'status': FastQC-style pass = +2, warn = 0, fail = -2. Metrics not listed here are reported but not graded. Raw_Read_Pairs, Base_Quality, Sequence_Diversity, Aligned_Percent, NRF and PBC1 reuse the PEDDEP/SEAseq cutoffs; PBC2, FRiP and TSS_Enrichment follow ENCODE ATAC-seq standards.",
+    "Raw_Read_Pairs":     { "type": "higher", "cutoffs": [15000000, 20000000, 25000000, 30000000] },
+    "Base_Quality":       { "type": "status" },
+    "Sequence_Diversity": { "type": "status" },
+    "Pct_Reads_Q30":      { "type": "higher", "cutoffs": [60, 70, 75, 80] },
+    "Aligned_Percent":    { "type": "higher", "cutoffs": [50, 60, 70, 80] },
+    "Mito_Percent":       { "type": "lower",  "cutoffs": [40, 20, 10, 5] },
+    "NRF":                { "type": "higher", "cutoffs": [0.5, 0.6, 0.7, 0.8] },
+    "PBC1":               { "type": "higher", "cutoffs": [0.5, 0.66, 0.75, 0.9] },
+    "PBC2":               { "type": "higher", "cutoffs": [1, 1, 3, 3] },
+    "Nucleosome_Pattern": { "type": "status" },
+    "TSS_Enrichment":     { "type": "higher", "cutoffs": [3, 5, 7, 10] },
+    "FRiP":               { "type": "higher", "cutoffs": [0.10, 0.15, 0.20, 0.30] },
+    "Total_Peaks":        { "type": "higher", "cutoffs": [10000, 20000, 50000, 100000] }
+}

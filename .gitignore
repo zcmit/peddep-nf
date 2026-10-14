@@ -1,0 +1,25 @@
+# Nextflow
+work/
+.nextflow/
+.nextflow.log*
+.nextflow.pid
+results/
+null/
+testing/
+testing*/
+
+# Data and large outputs never belong in the repo
+*.fastq.gz
+*.fq.gz
+*.bam
+*.bai
+*.bw
+*.sif
+*.img
+
+# Editors / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
+__pycache__/

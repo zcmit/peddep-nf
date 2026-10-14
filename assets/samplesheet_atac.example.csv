@@ -1,0 +1,4 @@
+sample,fastq_1,fastq_2,outdir
+SAMPLE_A,/path/to/SAMPLE_A_S1_L001_R1_001.fastq.gz,/path/to/SAMPLE_A_S1_L001_R2_001.fastq.gz,
+SAMPLE_A,/path/to/SAMPLE_A_S1_L002_R1_001.fastq.gz,/path/to/SAMPLE_A_S1_L002_R2_001.fastq.gz,
+SAMPLE_B,s3://my-bucket/fastq/SAMPLE_B_R1.fastq.gz,s3://my-bucket/fastq/SAMPLE_B_R2.fastq.gz,/project/results/cellline_B/ATAC/SAMPLE_B
