@@ -157,10 +157,26 @@ This keeps the grading scheme of the PEDDEP/SEAseq reports. Each graded metric s
 
 | Environment | What was run | Result |
 |---|---|---|
-| `nextflow lint`, `-stub` | full DAG, Nextflow 24.10.2 and 25.10.2 | pass |
-| Local executor + Singularity (one 8-core node) | `-profile test,singularity` | see below |
-| LSF via nf-core `stjude` profile | `-profile test,stjude` | see below |
+| `nextflow lint`, `-stub` | full DAG incl. multi-lane merge and per-sample `outdir`, Nextflow 24.10.2 and 25.10.2 | pass |
+| Local executor + Singularity (one 8-core node) | `-profile test,singularity` (49 tasks, ~3.5 min); re-run with `-resume` | pass; all 49 tasks cached on resume |
+| LSF via the nf-core `stjude` institutional profile | `-profile test,stjude` | pass; results identical to the local run |
+| LSF + Singularity, human data | 4 PEDDEP ATAC samples, GRCh38, local site config | see [Comparison with the WDL pipeline](#comparison-with-the-wdl-pipeline) |
 | SLURM, SGE, PBS, AWS/Google/Azure Batch | example configs only | **not yet tested** |
+
+## Comparison with the WDL pipeline
+
+The same four PEDDEP ATAC-seq libraries (NextSeq 2000, 2×76 bp, 3–27 M read pairs) were run through both pipelines on GRCh38. Peak overlap uses the WDL's MACS 1.4 `p9_kd-auto` narrow peaks against MACS3 narrowPeak. Coverage correlation compares the WDL's 50-bp fragment FPM bigWig with the new fragment CPM bigWig, in 5-kb bins with chrM excluded.
+
+| Library | Raw pairs (both) | WDL peaks recovered | New peaks in WDL set | Coverage Spearman ρ | New peaks |
+|---|---|---|---|---|---|
+| 1 | 3.0 M | 67.8 % | 58.7 % | 0.889 | 14,314 |
+| 2 | 3.7 M | 74.2 % | 62.1 % | 0.891 | 18,517 |
+| 3 | 12.7 M | 80.8 % | 83.7 % | 0.912 | 35,107 |
+| 4 | 26.6 M | — (WDL run failed in MACS 1.4 peak model) | — | — | 41,698 |
+
+- Raw read-pair counts agree exactly. The WDL report's own "Raw_Reads" column is the count *after* trimming: its minimum-length rule (≈57 bp) had already discarded ~22 % of pairs.
+- WDL peaks the new pipeline does not call are the weaker ones: median MACS score 110–120, against 145–254 for recovered peaks. Agreement rises with sequencing depth.
+- The new QC shows what the WDL report could not: 35–59 % of mapped reads in these libraries are mitochondrial. TSS enrichment is 5.4–6.0, FRiP 0.35–0.55, and all four show a clear nucleosome pattern.
 
 ## License
 
