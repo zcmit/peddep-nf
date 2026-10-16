@@ -8,7 +8,7 @@ process MACS3_CALLPEAK {
         'community.wave.seqera.io/library/macs3:3.0.4--e0346d811b8b428e' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam), path(bai), path(control), path(control_bai)
     val gsize
 
     output:
@@ -21,11 +21,14 @@ process MACS3_CALLPEAK {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def ctrl   = control ? "--control ${control}" : ''
+    def format = meta.single_end ? 'BAM' : 'BAMPE'
     """
     mkdir -p macs_tmp
     macs3 callpeak \\
         --treatment ${bam} \\
-        --format BAMPE \\
+        ${ctrl} \\
+        --format ${format} \\
         --gsize ${gsize} \\
         --name ${prefix} \\
         --keep-dup all \\

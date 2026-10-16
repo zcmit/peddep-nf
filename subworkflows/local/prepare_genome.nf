@@ -109,6 +109,7 @@ workflow PREPARE_GENOME {
     autosomes   = GENOME_FILTER.out.autosomes
     excluded    = ch_excluded
     tss         = GTF2TSS.out.tss
+    gtf         = ch_gtf
     gsize       = ch_gsize
     mito_name   = channel.value(mito)
     versions    = ch_versions

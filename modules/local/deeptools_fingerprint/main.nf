@@ -8,7 +8,7 @@ process DEEPTOOLS_FINGERPRINT {
         'biocontainers/mulled-v2-eb9e7907c7a753917c1e4d7a64384c047429618a:28424fe3aec58d2b3e4e4390025d886207657d25-0' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bams), path(bais)
 
     output:
     tuple val(meta), path("*.plotFingerprint.pdf")          , emit: pdf
@@ -19,13 +19,13 @@ process DEEPTOOLS_FINGERPRINT {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def labels = [bams].flatten().collect { b -> b.name - ~/\.filtered\.bam$/ - ~/\.bam$/ }.join(' ')
     """
     export MPLCONFIGDIR=\$PWD/.matplotlib
 
     plotFingerprint \\
-        --bamfiles ${bam} \\
-        --labels ${meta.id} \\
-        --extendReads \\
+        --bamfiles ${bams} \\
+        --labels ${labels} \\
         --skipZeros \\
         --numberOfProcessors ${task.cpus} \\
         ${args} \\

@@ -1,0 +1,15 @@
+{
+    "_comment": "Test-profile cutoffs: the ChIP-seq cutoffs scaled for the tiny yeast dataset (100k read pairs, 12 Mb genome).",
+    "Raw_Reads": {"type": "higher", "cutoffs": [50000, 100000, 150000, 200000]},
+    "Base_Quality": {"type": "status"},
+    "Sequence_Diversity": {"type": "status"},
+    "Pct_Reads_Q30": {"type": "higher", "cutoffs": [60, 70, 75, 80]},
+    "Aligned_Percent": {"type": "higher", "cutoffs": [50, 60, 70, 80]},
+    "NRF": {"type": "higher", "cutoffs": [0.5, 0.6, 0.7, 0.8]},
+    "PBC1": {"type": "higher", "cutoffs": [0.5, 0.66, 0.75, 0.9]},
+    "PBC2": {"type": "higher", "cutoffs": [1, 1, 3, 3]},
+    "NSC": {"type": "higher", "cutoffs": [1.045, 1.045, 1.045, 1.045]},
+    "RSC": {"type": "higher", "cutoffs": [0.75, 0.75, 0.75, 1.0]},
+    "FRiP": {"type": "higher", "cutoffs": [0.0075, 0.01, 0.02, 0.05]},
+    "Total_Peaks": {"type": "higher", "cutoffs": [20, 50, 100, 200]}
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Combine per-sample *.atac_qc_metrics.json files into one run-level table.
+"""Combine per-sample *_qc_metrics.json files (any assay) into one run-level table.
 
 Writes <out-prefix>.tsv, <out-prefix>.html (coloured by score) and an HTML
 section for MultiQC (custom content, file name must end in _mqc.html).
@@ -53,6 +53,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out-prefix", required=True)
     parser.add_argument("--multiqc", required=True)
+    parser.add_argument("--title", default="ATAC-seq", help="assay name shown in headings")
+    parser.add_argument("--section-id", default="peddep_atac_grades", help="MultiQC section id")
+    parser.add_argument("--thresholds-name", default="atac_qc_thresholds.json",
+                        help="thresholds file named in the MultiQC description")
     parser.add_argument("metrics", nargs="+")
     args = parser.parse_args()
 
@@ -68,18 +72,17 @@ def main():
 
     table = table_html(samples)
     with open(args.out_prefix + ".html", "w") as out:
-        out.write("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>ATAC-seq QC summary</title>"
-                  "%s</head><body style=\"font-family:Helvetica,Arial,sans-serif;margin:24px\">"
-                  "<h1 style=\"font-size:20px\">PEDDEP ATAC-seq QC summary (%d samples)</h1>"
-                  "<p>Each graded metric scores -2 to +2; Overall_Quality is the mean score.</p>"
-                  "<div style=\"overflow-x:auto\">%s</div>%s</body></html>\n" % (STYLE, len(samples), table, LEGEND))
+        out.write("<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><title>%s QC summary</title>" % args.title)
+        out.write("%s</head><body style=\"font-family:Helvetica,Arial,sans-serif;margin:24px\">" % STYLE)
+        out.write("<h1 style=\"font-size:20px\">PEDDEP %s QC summary (%d samples)</h1>" % (args.title, len(samples)))
+        out.write("<p>Each graded metric scores -2 to +2; Overall_Quality is the mean score.</p>")
+        out.write("<div style=\"overflow-x:auto\">%s</div>%s</body></html>\n" % (table, LEGEND))
 
     with open(args.multiqc, "w") as out:
-        out.write("<!--\nid: 'peddep_atac_grades'\nsection_name: 'PEDDEP QC grades'\n"
-                  "description: 'Each graded metric scores -2 to +2 (thresholds in assets/atac_qc_thresholds.json); "
-                  "Overall_Quality is the mean score. Uncoloured columns are informational.'\n-->\n")
+        out.write("<!--\nid: '%s'\nsection_name: 'PEDDEP QC grades'\n" % args.section_id)
+        out.write("description: 'Each graded metric scores -2 to +2 (thresholds in assets/%s); " % args.thresholds_name)
+        out.write("Overall_Quality is the mean score. Uncoloured columns are informational.'\n-->\n")
         out.write(STYLE + '<div style="overflow-x:auto">' + table + "</div>" + LEGEND + "\n")
-
 
 if __name__ == "__main__":
     main()

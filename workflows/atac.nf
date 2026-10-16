@@ -27,9 +27,9 @@ include { FRAGMENT_QC                                   } from '../modules/local
 include { ATAQV                                         } from '../modules/local/ataqv'
 include { MKARV                                         } from '../modules/local/mkarv'
 include { ATAC_QC_REPORT                                } from '../modules/local/atac_qc_report'
-include { ATAC_QC_SUMMARY                               } from '../modules/local/atac_qc_summary'
+include { QC_SUMMARY as ATAC_QC_SUMMARY                 } from '../modules/local/qc_summary'
 include { MULTIQC                                       } from '../modules/local/multiqc'
-include { toSampleMeta                                  } from '../subworkflows/local/utils'
+include { toSampleMeta; groupLaneFiles                  } from '../subworkflows/local/utils'
 
 workflow ATAC {
     take:
@@ -86,9 +86,11 @@ workflow ATAC {
     SAMTOOLS_STATS_FILTERED(ch_filtered)
     TN5_SHIFT(ch_filtered)
 
-    MACS3_NARROW(ch_filtered, PREPARE_GENOME.out.gsize)
+    // ATAC has no control library
+    ch_macs_input = ch_filtered.map { meta, bam, bai -> [ meta, bam, bai, [], [] ] }
+    MACS3_NARROW(ch_macs_input, PREPARE_GENOME.out.gsize)
     if (!params.skip_broad_peaks) {
-        MACS3_BROAD(ch_filtered, PREPARE_GENOME.out.gsize)
+        MACS3_BROAD(ch_macs_input, PREPARE_GENOME.out.gsize)
         ch_versions = ch_versions.mix(MACS3_BROAD.out.versions)
     }
 
@@ -147,7 +149,7 @@ workflow ATAC {
 
     ATAC_QC_REPORT(
         ch_report_inputs,
-        file(params.qc_thresholds, checkIfExists: true),
+        file(params.qc_thresholds ?: "${projectDir}/assets/atac_qc_thresholds.json", checkIfExists: true),
         PREPARE_GENOME.out.mito_name
     )
     ATAC_QC_SUMMARY(ATAC_QC_REPORT.out.json.map { _meta, json -> json }.collect())
@@ -182,17 +184,9 @@ workflow ATAC {
         .mix(ch_versions_yml)
         .collect()
 
-    MULTIQC(ch_multiqc_files, file(params.multiqc_config, checkIfExists: true))
+    MULTIQC(ch_multiqc_files, file(params.multiqc_config ?: "${projectDir}/assets/multiqc_config.yml", checkIfExists: true))
 
     emit:
     multiqc_report = MULTIQC.out.report
     qc_summary     = ATAC_QC_SUMMARY.out.tsv
-}
-
-// Collect per-lane files of each sample into one list: [ sample_meta, [ files ] ]
-def groupLaneFiles(ch) {
-    return ch
-        .map { meta, files -> [ groupKey(toSampleMeta(meta), meta.n_lanes), files ] }
-        .groupTuple()
-        .map { key, files -> [ key.getGroupTarget(), files.flatten() ] }
 }

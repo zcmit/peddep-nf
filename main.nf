@@ -8,7 +8,8 @@
 */
 
 include { ATAC                                        } from './workflows/atac'
-include { parseSamplesheet; validateParameters; helpMessage } from './subworkflows/local/utils'
+include { CHIP                                        } from './workflows/chip'
+include { parseSamplesheet; parseChipSamplesheet; validateParameters; helpMessage } from './subworkflows/local/utils'
 
 workflow {
     main:
@@ -26,6 +27,10 @@ workflow {
           workDir : ${workflow.workDir}
         """.stripIndent()
 
-        ATAC(channel.fromList(parseSamplesheet(params.input)))
+        if (params.assay == 'atac') {
+            ATAC(channel.fromList(parseSamplesheet(params.input)))
+        } else {
+            CHIP(channel.fromList(parseChipSamplesheet(params.input, params.assay)))
+        }
     }
 }

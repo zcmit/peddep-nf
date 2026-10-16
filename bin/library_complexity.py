@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """ENCODE library-complexity metrics from a coordinate-sorted, duplicate-marked BAM.
 
-A fragment is identified by (contig, start, end, read-1 strand) of a properly
-paired read 1 with MAPQ >= --min-mapq. Duplicates are counted (they are only
-marked, not removed), so:
+Paired-end: a fragment is identified by (contig, start, end, read-1 strand) of a
+properly paired read 1 with MAPQ >= --min-mapq. Single-end: a read is identified
+by (contig, 5' position, strand). Duplicates are counted (they are only marked,
+not removed), so:
     NRF  = distinct fragments / total fragments
     PBC1 = fragments seen exactly once / distinct fragments
     PBC2 = fragments seen exactly once / fragments seen exactly twice
@@ -42,11 +43,18 @@ def main():
         counts = Counter()
         current = None
         for read in bam.fetch(until_eof=True):
-            if (not read.is_paired or not read.is_proper_pair or not read.is_read1
-                    or read.is_unmapped or read.mate_is_unmapped or read.is_secondary
-                    or read.is_supplementary or read.is_qcfail
-                    or read.mapping_quality < args.min_mapq or read.template_length == 0):
+            if (read.is_unmapped or read.is_secondary or read.is_supplementary or read.is_qcfail
+                    or read.mapping_quality < args.min_mapq):
                 continue
+            if read.is_paired:
+                if (not read.is_proper_pair or not read.is_read1 or read.mate_is_unmapped
+                        or read.template_length == 0):
+                    continue
+                start = min(read.reference_start, read.next_reference_start)
+                key = (start, start + abs(read.template_length), read.is_reverse)
+            else:
+                five_prime = read.reference_end if read.is_reverse else read.reference_start
+                key = (five_prime, read.is_reverse)
             contig = read.reference_name
             if contig in excluded:
                 continue
@@ -54,8 +62,7 @@ def main():
                 tally(counts)
                 counts = Counter()
                 current = contig
-            start = min(read.reference_start, read.next_reference_start)
-            counts[(start, start + abs(read.template_length), read.is_reverse)] += 1
+            counts[key] += 1
         tally(counts)
 
     nrf = distinct / total if total else 0.0
