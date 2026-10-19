@@ -148,6 +148,7 @@ def helpMessage() {
     ChIP-seq / CUT&RUN:
       --broad_marks       Marks graded on broad peaks [${params.broad_marks}]
       --rose_marks        Marks that get ROSE stitched regions ('' = none) [${params.rose_marks}]
+      --rose_peak_pvalue  Narrow peaks with p <= this go into ROSE [${params.rose_peak_pvalue}]
       --se_fragment_length  Single-end fragment length for MACS3/bigWigs [${params.se_fragment_length}]
       --cutrun_dedup_targets  Also remove duplicates from CUT&RUN targets [${params.cutrun_dedup_targets}]
 

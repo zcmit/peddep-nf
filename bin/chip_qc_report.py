@@ -29,7 +29,7 @@ METRICS = [
     ("PBC1", "PCR bottleneck coefficient 1 (once / distinct)", "library complexity"),
     ("PBC2", "PCR bottleneck coefficient 2 (once / twice)", "library complexity"),
     ("Final_Reads", "Reads (SE) or pairs (PE) kept after filtering", "samtools flagstat"),
-    ("Fragment_Length", "Estimated fragment length (bp)", "phantompeakqualtools"),
+    ("Fragment_Length", "Fragment length (bp): median insert size (PE) or cross-correlation estimate (SE)", "phantompeakqualtools"),
     ("NSC", "Normalized strand cross-correlation", "phantompeakqualtools"),
     ("RSC", "Relative strand cross-correlation", "phantompeakqualtools"),
     ("Peak_Type", "Peak set used for FRiP / Total_Peaks", "MACS3"),

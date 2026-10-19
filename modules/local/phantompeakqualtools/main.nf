@@ -1,6 +1,8 @@
 /*
  * Strand cross-correlation (NSC, RSC, fragment length) with run_spp.R.
- * Paired-end: read 1 only. Subsampled to at most --spp_max_reads reads (ENCODE uses 15M).
+ * Paired-end: read 1 only, with NSC/RSC taken at the median insert size (-speak); SPP's own
+ * estimate can lock onto shift 0 for CUT&RUN. Subsampled to at most --spp_max_reads reads
+ * (ENCODE uses 15M).
  */
 process PHANTOMPEAKQUALTOOLS {
     tag "${meta.id}"
@@ -35,6 +37,14 @@ process PHANTOMPEAKQUALTOOLS {
         mv ${prefix}.all.bam ${prefix}.bam
     fi
 
+    # paired-end: median insert size (|TLEN| of read 1) as the cross-correlation peak
+    SPEAK=''
+    if [ "${meta.single_end}" != "true" ]; then
+        SPEAK=\$(samtools view ${prefix}.bam \\
+            | awk -v max=${params.max_fragment_length} '{ t = \$9 < 0 ? -\$9 : \$9 } t > 0 && t <= max { c[t]++; n++ }
+                END { if (n) { s = 0; for (i = 1; i <= max; i++) { s += c[i]; if (s >= n / 2) { print i; exit } } } }')
+    fi
+
     RUN_SPP=\$(command -v run_spp.R)
     Rscript -e "library(caTools); source(\\"\$RUN_SPP\\")" \\
         -c=${prefix}.bam \\
@@ -43,6 +53,7 @@ process PHANTOMPEAKQUALTOOLS {
         -out=${prefix}.spp.out \\
         -rf \\
         -tmpdir=. \\
+        \${SPEAK:+-speak=\$SPEAK} \\
         ${args}
     rm ${prefix}.bam
 
