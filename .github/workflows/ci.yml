@@ -22,13 +22,14 @@ jobs:
         run: nextflow lint .
 
   test:
-    name: test (${{ matrix.mode }}, Nextflow ${{ matrix.NXF_VER }})
+    name: ${{ matrix.profile }} (${{ matrix.mode }}, Nextflow ${{ matrix.NXF_VER }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         NXF_VER: ["24.10.2", "latest-stable"]
         mode: ["stub", "docker"]
+        profile: ["test", "test_chip"]
     steps:
       - uses: actions/checkout@v5
       - uses: nf-core/setup-nextflow@v2
@@ -36,13 +37,16 @@ jobs:
           version: ${{ matrix.NXF_VER }}
       - name: Stub run (workflow wiring only)
         if: matrix.mode == 'stub'
-        run: nextflow run . -profile test -stub --outdir results -ansi-log false
+        run: nextflow run . -profile ${{ matrix.profile }} -stub --outdir results -ansi-log false
+      - name: Stub run, CUT&RUN mode
+        if: matrix.mode == 'stub' && matrix.profile == 'test_chip'
+        run: nextflow run . -profile test_chip -stub --assay cutrun --outdir results_cutrun -ansi-log false
       - name: Test run (yeast data, Docker)
         if: matrix.mode == 'docker'
-        run: nextflow run . -profile test,docker --outdir results -ansi-log false
+        run: nextflow run . -profile ${{ matrix.profile }},docker --outdir results -ansi-log false
       - name: Show QC summary
         if: matrix.mode == 'docker'
-        run: cat results/atac_qc_summary.tsv
+        run: cat results/*_qc_summary.tsv
       # Job logs need admin rights to download; annotations are public, so surface the error there
       - name: Report Nextflow error
         if: failure()
