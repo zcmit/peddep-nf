@@ -1,8 +1,8 @@
-"""Shared helpers for the PEDDEP graded QC reports (ATAC-seq, ChIP-seq, CUT&RUN).
+"""Shared helpers for the PEDDEP graded QC reports (ATAC-seq, ChIP-seq, CUT&RUN, HiChIP).
 
 Parsers for FastQC / Trim Galore / bowtie2 / samtools / Picard / ataqv / SPP
 outputs, the -2..+2 scoring rules, and the text / HTML / JSON report writers.
-Imported by atac_qc_report.py and chip_qc_report.py (same directory).
+Imported by atac_qc_report.py, chip_qc_report.py and hichip_qc_report.py (same directory).
 """
 import html
 import json
@@ -17,6 +17,7 @@ STATUS_RANK = {"fail": 0, "warn": 1, "pass": 2}
 INTEGER_METRICS = {
     "Raw_Read_Pairs", "Raw_Reads", "Final_Read_Pairs", "Final_Reads", "Total_Peaks",
     "Median_Fragment", "Fragment_Length", "Stitched_Regions", "SE_Like_Regions",
+    "Unique_Contacts", "Loops_Q0.01", "Merged_Loops_Q0.01",
 }
 FOUR_DECIMAL_METRICS = {"NRF", "PBC1", "PBC2", "FRiP", "NFR_Fraction", "NSC", "RSC"}
 

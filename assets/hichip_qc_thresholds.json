@@ -1,0 +1,14 @@
+{
+    "_comment": "Score cutoffs for the PEDDEP graded HiChIP QC report. 'higher': value >= cutoffs[i] earns -1, 0, +1, +2 (below the first cutoff = -2); 'lower': value <= cutoffs[i] earns -1, 0, +1, +2 (above the first cutoff = -2). 'status': FastQC-style pass = +2, warn = 0, fail = -2. FRiP, Total_Peaks and loop counts are not graded for INPUT libraries. Metrics not listed are reported but not graded. Contact cutoffs follow common HiChIP guidance (Dovetail/Arima); review them against your own libraries.",
+    "Raw_Read_Pairs": {"type": "higher", "cutoffs": [50000000, 100000000, 150000000, 200000000]},
+    "Base_Quality": {"type": "status"},
+    "Sequence_Diversity": {"type": "status"},
+    "Pct_Reads_Q30": {"type": "higher", "cutoffs": [60, 70, 75, 80]},
+    "Mapped_Pairs_Pct": {"type": "higher", "cutoffs": [50, 60, 70, 80]},
+    "Duplication_Pct": {"type": "lower", "cutoffs": [70, 60, 50, 40]},
+    "Unique_Contacts": {"type": "higher", "cutoffs": [25000000, 50000000, 75000000, 100000000]},
+    "Cis_Pct": {"type": "higher", "cutoffs": [40, 50, 60, 70]},
+    "FRiP": {"type": "higher", "cutoffs": [0.01, 0.02, 0.05, 0.1]},
+    "Total_Peaks": {"type": "higher", "cutoffs": [1000, 2000, 5000, 10000]},
+    "Loops_Q0.01": {"type": "higher", "cutoffs": [500, 1000, 5000, 10000]}
+}

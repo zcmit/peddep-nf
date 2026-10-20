@@ -26,7 +26,7 @@ def groupLaneFiles(ch) {
 }
 
 def validateParameters() {
-    def supported = ['atac', 'chip', 'cutrun']
+    def supported = ['atac', 'chip', 'cutrun', 'hichip']
     if (!(params.assay in supported)) {
         error("--assay '${params.assay}' is not available yet. Supported: ${supported.join(', ')}")
     }
@@ -42,7 +42,7 @@ def validateParameters() {
     if (!params.fasta && !getGenomeAttribute('fasta')) {
         error("No reference: give --genome <${params.genomes.keySet().join('|')}> or --fasta (and --gtf)")
     }
-    if (!params.gtf && !getGenomeAttribute('gtf')) {
+    if (params.assay != 'hichip' && !params.gtf && !getGenomeAttribute('gtf')) {
         error("No annotation: --gtf is needed for TSS enrichment")
     }
 }
@@ -113,23 +113,26 @@ def helpMessage() {
     zcmit/peddep-nf  v${workflow.manifest.version}
 
     Usage:
-      nextflow run zcmit/peddep-nf --assay <atac|chip|cutrun> --input samplesheet.csv --outdir results \\
+      nextflow run zcmit/peddep-nf --assay <atac|chip|cutrun|hichip> --input samplesheet.csv --outdir results \\
           --genome GRCh38 -profile <docker|singularity|apptainer|podman|conda>[,<institution>]
 
     Required:
-      --assay             atac (default), chip (ChIP-seq) or cutrun (CUT&RUN)
+      --assay             atac (default), chip (ChIP-seq), cutrun (CUT&RUN) or hichip (HiChIP)
       --input             atac:         sample,fastq_1,fastq_2[,outdir]
                           chip/cutrun:  sample,fastq_1,fastq_2,mark,control[,outdir]
+                          hichip:       sample,fastq_1,fastq_2,mark,control[,peaks][,outdir]
                           (repeat a sample on several rows for multiple lanes; fastq_2 empty =
-                          single-end; control = sample name of the Input/IgG row)
+                          single-end (not HiChIP); control = sample name of the Input/IgG/INPUT
+                          row; peaks = optional BED of loop anchors, e.g. ChIP-seq peaks)
       --outdir            Run-level output directory (MultiQC, QC summary, pipeline_info)
       --genome | --fasta  A key from conf/genomes.config (GRCh38, hg38, GRCm38, mm10)
                           or an explicit FASTA (local or remote, may be .gz)
 
     References (override or replace --genome):
-      --gtf               Gene annotation, used for TSS enrichment
+      --gtf               Gene annotation, used for TSS enrichment (not needed for HiChIP)
       --blacklist         BED of regions to exclude
       --bowtie2_index     Directory or prefix of a prebuilt index (built if absent)
+      --bwamem2_index     HiChIP: directory or prefix of a prebuilt bwa-mem2 index (built if absent)
       --mito_name         Mitochondrial contig name [chrM]
       --macs_gsize        Effective genome size for MACS3 (computed from FASTA if absent)
       --canonical_chroms  Regex of contigs to keep, e.g. '^chr([0-9]+|X|Y|M)\$'
@@ -152,6 +155,15 @@ def helpMessage() {
       --se_fragment_length  Single-end fragment length for MACS3/bigWigs [${params.se_fragment_length}]
       --cutrun_dedup_targets  Also remove duplicates from CUT&RUN targets [${params.cutrun_dedup_targets}]
 
+    HiChIP:
+      --split_fastq       Read pairs per alignment chunk, 0 = whole lanes [${params.split_fastq}]
+      --read_length       Read length MACS3 assumes for the read-end records [${params.read_length}]
+      --fithichip_bin_size / --fithichip_low_dist / --fithichip_upp_dist
+                          FitHiChIP bin size and loop distance range [${params.fithichip_bin_size} / ${params.fithichip_low_dist} / ${params.fithichip_upp_dist}]
+      --fithichip_int_type  3 = peak-to-all, 1 = peak-to-peak [${params.fithichip_int_type}]
+      --fithichip_qvalues   Loop q-value cutoffs written as tracks [${params.fithichip_qvalues}]
+      --save_pairs        Publish the deduplicated contact pairs [${params.save_pairs}]
+
     Resources:
       --max_cpus / --max_memory / --max_time   Per-task ceilings [${params.max_cpus} / ${params.max_memory} / ${params.max_time}]
 
@@ -160,10 +172,12 @@ def helpMessage() {
 }
 
 /*
- * ChIP-seq / CUT&RUN samplesheet: sample,fastq_1,fastq_2,mark,control[,outdir]
- *   - fastq_2 empty = single-end; rows sharing a sample name are lanes
+ * ChIP-seq / CUT&RUN / HiChIP samplesheet: sample,fastq_1,fastq_2,mark,control[,peaks][,outdir]
+ *   - fastq_2 empty = single-end (ChIP-seq / CUT&RUN only); rows sharing a sample name are lanes
  *   - control = the sample name of that library's Input/IgG row (empty for controls
  *     and for cases without a control); one control can serve many cases
+ *   - peaks (HiChIP only, optional) = BED of loop anchors to use instead of the
+ *     library's own MACS3 peaks; a relative path is taken from the samplesheet's folder
  * Returns [ meta, [fastqs] ] per lane.
  */
 def parseChipSamplesheet(String path, String assay) {
@@ -188,8 +202,14 @@ def parseChipSamplesheet(String path, String assay) {
         if (!row.fastq_1) {
             error("Samplesheet line ${line}: fastq_1 is required")
         }
+        if (assay == 'hichip' && !row.fastq_2) {
+            error("Samplesheet line ${line}: HiChIP needs both fastq_1 and fastq_2")
+        }
+        if (row.peaks && assay != 'hichip') {
+            error("Samplesheet line ${line}: the peaks column is only used with --assay hichip")
+        }
         if (!row.mark) {
-            error("Samplesheet line ${line}: mark is required (e.g. H3K27ac, CTCF, Input, IgG)")
+            error("Samplesheet line ${line}: mark is required (e.g. H3K27ac, CTCF, Input, IgG, INPUT)")
         }
         def key = "${sample}\t${row.fastq_1}"
         if (key in seen) {
@@ -200,11 +220,12 @@ def parseChipSamplesheet(String path, String assay) {
             outdir    : row.outdir ?: null,
             mark      : row.mark,
             control   : row.control ?: '',
+            peaks     : row.peaks ?: '',
             single_end: !row.fastq_2
         ]
         if (info.containsKey(sample)) {
             def first = info[sample]
-            ['outdir', 'mark', 'control', 'single_end'].each { field ->
+            ['outdir', 'mark', 'control', 'peaks', 'single_end'].each { field ->
                 if (first[field] != current[field]) {
                     error("Samplesheet line ${line}: sample '${sample}' has a different ${field} than on its earlier row(s)")
                 }
@@ -223,6 +244,20 @@ def parseChipSamplesheet(String path, String assay) {
         }
         if (info[c].control) {
             error("Samplesheet: '${c}' is used as a control but has its own control '${info[c].control}'")
+        }
+        if (info[c].peaks) {
+            error("Samplesheet: '${c}' is used as a control but has a peaks file; controls get no peaks or loops")
+        }
+    }
+
+    // relative peaks paths are read from the samplesheet's folder
+    def sheet_dir = file(path).parent
+    info.each { _sample, v ->
+        if (v.peaks && !(v.peaks ==~ /^[A-Za-z][A-Za-z0-9+.-]*:\/\/.*/) && !v.peaks.startsWith('/')) {
+            v.peaks = sheet_dir.resolve(v.peaks).toUriString()
+        }
+        if (v.peaks) {
+            file(v.peaks, checkIfExists: true)
         }
     }
 
@@ -245,6 +280,10 @@ def parseChipSamplesheet(String path, String assay) {
             lane      : lane_index[sample],
             n_lanes   : s.n_lanes
         ]
+        if (assay == 'hichip') {
+            // kept out of ChIP/CUT&RUN metas so their task hashes (and -resume) are unchanged
+            meta.peaks = s.peaks
+        }
         def fastqs = [ file(row.fastq_1, checkIfExists: true) ]
         if (row.fastq_2) {
             fastqs << file(row.fastq_2, checkIfExists: true)

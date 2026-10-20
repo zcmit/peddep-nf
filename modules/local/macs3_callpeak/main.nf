@@ -22,7 +22,7 @@ process MACS3_CALLPEAK {
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def ctrl   = control ? "--control ${control}" : ''
-    def format = meta.single_end ? 'BAM' : 'BAMPE'
+    def format = task.ext.format ?: (meta.single_end ? 'BAM' : 'BAMPE')
     """
     mkdir -p macs_tmp
     macs3 callpeak \\
