@@ -45,7 +45,12 @@ LINE2_CTCF_SE,/data/L2_CTCF.fastq.gz,,CTCF,,/projects/LINE2/CTCF
 
 **Broad marks.** `--broad_marks` (default `H3K27me3,H3K36me3,H3K9me3,H3K9me2,H3K79me2,H3K4me1,H4K20me1`) lists the marks whose FRiP and peak count come from broad peaks. Both peak sets are produced for every case.
 
-**ROSE.** ROSE runs only for the marks in `--rose_marks` (`''` turns it off). Its input is the narrow peaks with p <= `--rose_peak_pvalue` (1e-9, ROSE's usual MACS input and what SEAseq used), merged into `unionpeaks.gff`. Regions are stitched within `--rose_stitch` (12.5 kb), excluding `--rose_tss` (±2 kb) around TSSs, and ranked by case signal minus control. Output file names match the old `STITCHED_peaks` folder. ROSE's own read-mapping step (`ROSE_bamToGFF.py`) is replaced by `bin/rose_bamtogff.py`. It computes the same per-region densities from one pass over the BAM: minutes instead of hours on a deep H3K27ac library, with values that match ROSE to the 4th decimal in all but a handful of regions. ROSE needs a container engine; it is not on conda.
+**ROSE.** ROSE runs only for the marks in `--rose_marks` (`''` turns it off). Its input is the narrow peaks with p <= `--rose_peak_pvalue` (1e-9, ROSE's usual MACS input and what SEAseq used), merged into `unionpeaks.gff`. Regions are stitched within `--rose_stitch` (12.5 kb), excluding `--rose_tss` (±2 kb) around TSSs, and ranked by case signal minus control. Output file names match the old `STITCHED_peaks` folder. Two slow steps of ROSE are replaced:
+
+- **Read mapping.** `bin/rose_bamtogff.py` replaces `ROSE_bamToGFF.py`. It computes the same per-region densities from one pass over the BAM. Values match ROSE to the 4th decimal in all but a handful of regions.
+- **Gene mapping.** `bin/rose_genemapper.py` runs ROSE's own `ROSE_geneMapper.py` with two lookups sped up: the transcript list and the 50 Mb TSS search. On the human data below its tables are byte-identical to ROSE's. It also fixes a ROSE crash on regions with no gene within 50 Mb, such as contigs without annotated genes; ROSE stopped there and wrote no gene tables.
+
+On the 44M-pair H3K27ac library below, ROSE takes 13 minutes. The same input takes 1 h 49 min with ROSE's own gene mapping, and hours more with its own read mapping. ROSE needs a container engine; it is not on conda.
 
 ## Outputs
 
@@ -101,7 +106,7 @@ The grading works as for ATAC-seq: each graded metric scores -2 to +2, and the o
 | Aligner | bowtie1 `-k 2 -m 2 -X 600` | bowtie2 `-X 2000`, then MAPQ >= 30 |
 | Duplicates | removed | removed for ChIP and for controls; kept in CUT&RUN targets |
 | Peak calling | MACS 1.4.2, three runs per case (p 1e-9 with and without duplicates, fixed shift) + SICER | MACS3 narrow + broad, one run each, fragment-aware for paired-end |
-| ROSE | every mark, mapping hours per run | `--rose_marks` only, fast mapping step |
+| ROSE | every mark, hours per run | `--rose_marks` only, about 15 min per run |
 | BAM2GFF metagene plots, peaksanno, TDF / wig tracks | yes | dropped (deepTools TSS plots instead of BAM2GFF) |
 | Motifs (MEME / HOMER) | optional, off in PEDDEP runs | dropped |
 | QC report "Raw_Reads" | BAM records after bowtie1 `-k 2`, so multi-mapped reads count twice | read pairs (or reads) in the FASTQ |
@@ -122,13 +127,13 @@ Two ChIP-seq libraries (H3K27ac, H3K27me3; 44–57M pairs, sharing one Input) an
 - Nearly every WDL peak is found again. The new pipeline calls more peaks because q < 0.05 is a looser cutoff than p < 1e-9. ROSE gets the p <= 1e-9 subset, which matches the old peak count (26,247 vs 28,544 for H3K27ac).
 - New broad peaks lie almost entirely inside SICER islands. SICER's islands are wider.
 - CUT&RUN coverage correlates less than ChIP for two reasons. Most 5-kb bins in CUT&RUN hold only background. The new tracks also keep duplicate fragments in CUT&RUN targets, where the WDL removed them.
-- ROSE (H3K27ac): ROSE_STATS_PLACEHOLDER
+- ROSE (H3K27ac) finds 558 super-enhancer-like regions against the WDL's 557. 94.8 % of the old ones overlap a new one (96.4 % the other way), and 99.6 % fall inside a new stitched region. There are 10,359 stitched regions against 12,577: 96.7 % of the new ones overlap an old one and 78.2 % of the old ones overlap a new one, because MACS3 and MACS 1.4 give somewhat different p <= 1e-9 peak sets.
 
 ### Compute cost
 
 | | SEAseq WDL | peddep-nf |
 |---|---|---|
-| One CUT&RUN case + its IgG (SJ0242 CTCF) | 212 LSF jobs, 143 CPU-hours, 23 h from first to last job | 30 tasks, 22 CPU-hours |
-| The batch of 10 cases + 5 IgG | 10 runs (each IgG processed twice): ≈ 1,430 CPU-hours (10 × the run above) | 251 tasks, 144 CPU-hours, 2 h 03 min wall time |
+| One CUT&RUN case + its IgG (SJ0242 CTCF) | 212 LSF jobs, 143 CPU-hours, 23 h from first to last job | 30 tasks, 23 CPU-hours |
+| The batch of 10 cases + 5 IgG | 10 runs (each IgG processed twice): ≈ 1,430 CPU-hours (10 × the run above) | 251 tasks, 142 CPU-hours, 1 h 55 min wall time |
 
 The largest costs in the WDL run were BAM2GFF metagene plots (95 CPU-hours), the second "single-end mode" pass, and ROSE (9.5 CPU-hours) for a CTCF run. In peddep-nf, bowtie2 alignment takes three quarters of the CPU time. CHIP_WALL_PLACEHOLDER

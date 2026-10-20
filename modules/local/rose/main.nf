@@ -3,8 +3,10 @@
  * PEDDEP/SEAseq pipeline uses). Narrow peaks with p <= --rose_peak_pvalue (ROSE's
  * usual MACS p 1e-9 input) are merged into unionpeaks.gff, so output names
  * (unionpeaks_AllStitched.table.txt, ...) match the old STITCHED_peaks folder.
- * ROSE's read mapping (ROSE_bamToGFF.py) is swapped for bin/rose_bamtogff.py, which
- * gives the same table in minutes instead of hours.
+ * Two slow parts of ROSE are swapped for faster code with the same output:
+ * read mapping (ROSE_bamToGFF.py -> bin/rose_bamtogff.py) and gene mapping
+ * (ROSE_geneMapper.py -> bin/rose_genemapper.py, which runs ROSE's own script with
+ * two slow ROSE_utils functions sped up).
  * Needs a container engine: ROSE is not packaged for conda.
  */
 process ROSE {
@@ -34,6 +36,7 @@ process ROSE {
 
     mkdir -p rose_fast
     ln -s "\$(command -v rose_bamtogff.py)" rose_fast/ROSE_bamToGFF.py
+    ln -s "\$(command -v rose_genemapper.py)" rose_fast/ROSE_geneMapper.py
     export PATH="\$PWD/rose_fast:\$PATH"
 
     if [ -s unionpeaks.gff ]; then
