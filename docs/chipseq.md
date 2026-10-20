@@ -136,4 +136,4 @@ Two ChIP-seq libraries (H3K27ac, H3K27me3; 44–57M pairs, sharing one Input) an
 | One CUT&RUN case + its IgG (SJ0242 CTCF) | 212 LSF jobs, 143 CPU-hours, 23 h from first to last job | 30 tasks, 23 CPU-hours |
 | The batch of 10 cases + 5 IgG | 10 runs (each IgG processed twice): ≈ 1,430 CPU-hours (10 × the run above) | 251 tasks, 142 CPU-hours, 1 h 55 min wall time |
 
-The largest costs in the WDL run were BAM2GFF metagene plots (95 CPU-hours), the second "single-end mode" pass, and ROSE (9.5 CPU-hours) for a CTCF run. In peddep-nf, bowtie2 alignment takes three quarters of the CPU time. CHIP_WALL_PLACEHOLDER
+The largest costs in the WDL run were BAM2GFF metagene plots (95 CPU-hours), the second "single-end mode" pass, and ROSE (9.5 CPU-hours) for a CTCF run. In peddep-nf, bowtie2 alignment takes three quarters of the CPU time. The ChIP batch above (H3K27ac, H3K27me3 and their Input) took 2 h 51 min wall time and 49 CPU-hours, with 13 minutes for ROSE.
