@@ -18,11 +18,13 @@ process FASTQC {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def ext    = reads[0].name.endsWith('.gz') ? 'fastq.gz' : 'fastq'
+    def fastqs = [reads].flatten()
+    def ext    = fastqs[0].name.endsWith('.gz') ? 'fastq.gz' : 'fastq'
+    def names  = meta.single_end ? ["${prefix}.${ext}"] : ["${prefix}_R1.${ext}", "${prefix}_R2.${ext}"]
+    def links  = [fastqs, names].transpose().collect { pair -> "ln -s ${pair[0]} ${pair[1]}" }.join('\n    ')
     """
-    ln -s ${reads[0]} ${prefix}_R1.${ext}
-    ln -s ${reads[1]} ${prefix}_R2.${ext}
-    fastqc ${args} --threads ${task.cpus} ${prefix}_R1.${ext} ${prefix}_R2.${ext}
+    ${links}
+    fastqc ${args} --threads ${task.cpus} ${names.join(' ')}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -32,8 +34,9 @@ process FASTQC {
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def names  = meta.single_end ? ["${prefix}"] : ["${prefix}_R1", "${prefix}_R2"]
     """
-    for r in R1 R2; do touch ${prefix}_\${r}_fastqc.html ${prefix}_\${r}_fastqc.zip; done
+    for r in ${names.join(' ')}; do touch \${r}_fastqc.html \${r}_fastqc.zip; done
     touch versions.yml
     """
 }

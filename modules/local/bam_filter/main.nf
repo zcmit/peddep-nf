@@ -1,7 +1,7 @@
 /*
  * Final analysis BAM: proper pairs, MAPQ filter, duplicates removed, reads
  * outside the include regions (mito, blacklist, non-canonical contigs) dropped,
- * then any mate left without its partner removed.
+ * then (paired-end) any mate left without its partner removed.
  */
 process BAM_FILTER {
     tag "${meta.id}"
@@ -23,13 +23,18 @@ process BAM_FILTER {
     script:
     def args   = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def pairs  = meta.single_end ?
+        "samtools view -@ ${task.cpus} -b ${args} -L ${include_bed} -o ${prefix}.filtered.bam ${bam}" :
+        [
+            "samtools view -@ ${task.cpus} -b ${args} -L ${include_bed} -o ${prefix}.view.bam ${bam}",
+            "samtools sort -n -@ ${task.cpus} -T ${prefix}.nsort -o ${prefix}.nsort.bam ${prefix}.view.bam",
+            "rm_orphan_pairs.py ${prefix}.nsort.bam ${prefix}.paired.bam",
+            "samtools sort -@ ${task.cpus} -T ${prefix}.csort -o ${prefix}.filtered.bam ${prefix}.paired.bam",
+            "rm ${prefix}.view.bam ${prefix}.nsort.bam ${prefix}.paired.bam"
+        ].join('\n    ')
     """
-    samtools view -@ ${task.cpus} -b ${args} -L ${include_bed} -o ${prefix}.view.bam ${bam}
-    samtools sort -n -@ ${task.cpus} -T ${prefix}.nsort -o ${prefix}.nsort.bam ${prefix}.view.bam
-    rm_orphan_pairs.py ${prefix}.nsort.bam ${prefix}.paired.bam
-    samtools sort -@ ${task.cpus} -T ${prefix}.csort -o ${prefix}.filtered.bam ${prefix}.paired.bam
+    ${pairs}
     samtools index ${prefix}.filtered.bam
-    rm ${prefix}.view.bam ${prefix}.nsort.bam ${prefix}.paired.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

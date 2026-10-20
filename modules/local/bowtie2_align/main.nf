@@ -20,6 +20,8 @@ process BOWTIE2_ALIGN {
     def args       = task.ext.args ?: ''
     def prefix     = task.ext.prefix ?: "${meta.id}"
     def sort_cpus  = Math.max(1, task.cpus.intdiv(4))
+    def fastqs     = [reads].flatten()
+    def read_args  = meta.single_end ? "-U ${fastqs[0]}" : "-1 ${fastqs[0]} -2 ${fastqs[1]}"
     """
     INDEX=\$(find -L bowtie2_index/ -name "*.rev.1.bt2" -o -name "*.rev.1.bt2l" | head -1 | sed -E 's/\\.rev\\.1\\.bt2l?\$//')
     if [ -z "\$INDEX" ]; then
@@ -34,8 +36,7 @@ process BOWTIE2_ALIGN {
         --rg SM:${meta.id} \\
         --rg PL:ILLUMINA \\
         -x \$INDEX \\
-        -1 ${reads[0]} \\
-        -2 ${reads[1]} \\
+        ${read_args} \\
         2> ${prefix}.bowtie2.log \\
         | samtools sort -@ ${sort_cpus} -T ${prefix}.sorttmp -o ${prefix}.sorted.bam -
 

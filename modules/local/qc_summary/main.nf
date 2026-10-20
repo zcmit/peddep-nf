@@ -1,7 +1,7 @@
 /*
  * One table for the whole run (TSV + coloured HTML) and the MultiQC section.
  */
-process ATAC_QC_SUMMARY {
+process QC_SUMMARY {
     label 'process_single'
 
     conda "bioconda::deeptools=3.5.6 bioconda::samtools=1.20"
@@ -13,14 +13,16 @@ process ATAC_QC_SUMMARY {
     path metrics, stageAs: 'metrics/*'
 
     output:
-    path "atac_qc_summary.tsv"        , emit: tsv
-    path "atac_qc_summary.html"       , emit: html
-    path "atac_qc_grades_mqc.html"    , emit: multiqc
-    path "versions.yml"               , emit: versions
+    path "${task.ext.prefix ?: 'qc_summary'}.tsv"     , emit: tsv
+    path "${task.ext.prefix ?: 'qc_summary'}.html"    , emit: html
+    path "*_grades_mqc.html"                          , emit: multiqc
+    path "versions.yml"                               , emit: versions
 
     script:
+    def args   = task.ext.args ?: ''
+    def prefix = task.ext.prefix ?: 'qc_summary'
     """
-    atac_qc_summary.py --out-prefix atac_qc_summary --multiqc atac_qc_grades_mqc.html metrics/*
+    qc_summary.py ${args} --out-prefix ${prefix} --multiqc ${prefix}_grades_mqc.html metrics/*
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -29,7 +31,8 @@ process ATAC_QC_SUMMARY {
     """
 
     stub:
+    def prefix = task.ext.prefix ?: 'qc_summary'
     """
-    touch atac_qc_summary.tsv atac_qc_summary.html atac_qc_grades_mqc.html versions.yml
+    touch ${prefix}.tsv ${prefix}.html ${prefix}_grades_mqc.html versions.yml
     """
 }

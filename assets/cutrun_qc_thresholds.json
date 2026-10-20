@@ -1,0 +1,15 @@
+{
+    "_comment": "Score cutoffs for the PEDDEP graded CUT&RUN QC report: the ChIP-seq cutoffs, except read depth (CUT&RUN needs far fewer reads; ~5-10M pairs is typical). 'higher': value >= cutoffs[i] earns -1, 0, +1, +2 (below the first cutoff = -2). 'status': FastQC-style pass = +2, warn = 0, fail = -2. NSC, RSC, FRiP, Total_Peaks and ROSE counts are not graded for Input/IgG controls. Metrics not listed are reported but not graded. Duplicates are kept in CUT&RUN targets, so NRF/PBC describe the library rather than what was used for peaks.",
+    "Raw_Reads": {"type": "higher", "cutoffs": [3000000, 5000000, 8000000, 10000000]},
+    "Base_Quality": {"type": "status"},
+    "Sequence_Diversity": {"type": "status"},
+    "Pct_Reads_Q30": {"type": "higher", "cutoffs": [60, 70, 75, 80]},
+    "Aligned_Percent": {"type": "higher", "cutoffs": [50, 60, 70, 80]},
+    "NRF": {"type": "higher", "cutoffs": [0.5, 0.6, 0.7, 0.8]},
+    "PBC1": {"type": "higher", "cutoffs": [0.5, 0.66, 0.75, 0.9]},
+    "PBC2": {"type": "higher", "cutoffs": [1, 1, 3, 3]},
+    "NSC": {"type": "higher", "cutoffs": [1.045, 1.045, 1.045, 1.045]},
+    "RSC": {"type": "higher", "cutoffs": [0.75, 0.75, 0.75, 1.0]},
+    "FRiP": {"type": "higher", "cutoffs": [0.0075, 0.01, 0.02, 0.05]},
+    "Total_Peaks": {"type": "higher", "cutoffs": [1000, 2000, 5000, 10000]}
+}
