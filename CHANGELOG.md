@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.0 (unreleased)
+## v0.2.0 (2026-10-20)
 
 ChIP-seq and CUT&RUN (`--assay chip`, `--assay cutrun`), a rewrite of the PEDDEP SEAseq/PEASEQ
 WDL pipeline in the style of pyflow-ChIPseq (see docs/chipseq.md).
