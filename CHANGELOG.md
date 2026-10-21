@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.3.0 (unreleased)
+## v0.3.0 (2026-10-21)
 
 HiChIP (`--assay hichip`), replacing the PEDDEP HiLOW WDL pipeline (see docs/hichip.md).
 
