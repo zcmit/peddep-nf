@@ -1,0 +1,6 @@
+sample,fastq_1,fastq_2,mark,control,peaks
+HICAR_WT,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T1/WT_rep1_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T1/WT_rep1_R2.fastq.gz,H3K4me3,HICAR_INPUT,
+HICAR_WT,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T1/WT_rep2_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T1/WT_rep2_R2.fastq.gz,H3K4me3,HICAR_INPUT,
+HICAR_KD,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T1/KD_rep1_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T1/KD_rep1_R2.fastq.gz,H3K4me3,,test_hichip_anchors.bed
+HICAR_INPUT,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T2/KD_rep1_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T2/KD_rep1_R2.fastq.gz,INPUT,,
+HICAR_INPUT,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T2/KD_rep2_R1.fastq.gz,https://raw.githubusercontent.com/nf-core/test-datasets/hicar/data/genomics/homo_sapiens/T2/KD_rep2_R2.fastq.gz,INPUT,,

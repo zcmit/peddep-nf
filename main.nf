@@ -9,6 +9,7 @@
 
 include { ATAC                                        } from './workflows/atac'
 include { CHIP                                        } from './workflows/chip'
+include { HICHIP                                      } from './workflows/hichip'
 include { parseSamplesheet; parseChipSamplesheet; validateParameters; helpMessage } from './subworkflows/local/utils'
 
 workflow {
@@ -29,6 +30,8 @@ workflow {
 
         if (params.assay == 'atac') {
             ATAC(channel.fromList(parseSamplesheet(params.input)))
+        } else if (params.assay == 'hichip') {
+            HICHIP(channel.fromList(parseChipSamplesheet(params.input, params.assay)))
         } else {
             CHIP(channel.fromList(parseChipSamplesheet(params.input, params.assay)))
         }

@@ -1,0 +1,15 @@
+{
+    "_comment": "Cutoffs scaled down for the tiny test_hichip dataset (about 0.6M read pairs per library); see hichip_qc_thresholds.json for real data.",
+    "Raw_Read_Pairs": {"type": "higher", "cutoffs": [100000, 200000, 400000, 600000]},
+    "Base_Quality": {"type": "status"},
+    "Sequence_Diversity": {"type": "status"},
+    "Pct_Reads_Q30": {"type": "higher", "cutoffs": [60, 70, 75, 80]},
+    "Mapped_Pairs_Pct": {"type": "higher", "cutoffs": [50, 60, 70, 80]},
+    "Duplication_Pct": {"type": "lower", "cutoffs": [70, 60, 50, 40]},
+    "Unique_Contacts": {"type": "higher", "cutoffs": [50000, 100000, 200000, 300000]},
+    "Cis_Pct": {"type": "higher", "cutoffs": [40, 50, 60, 70]},
+    "Cis_Over_20kb_Pct": {"type": "higher", "cutoffs": [10, 20, 30, 40]},
+    "FRiP": {"type": "higher", "cutoffs": [0.01, 0.02, 0.05, 0.1]},
+    "Total_Peaks": {"type": "higher", "cutoffs": [100, 200, 500, 1000]},
+    "Loops_Q0.01": {"type": "higher", "cutoffs": [5, 10, 50, 100]}
+}

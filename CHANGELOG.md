@@ -1,5 +1,21 @@
 # Changelog
 
+## v0.3.0 (unreleased)
+
+HiChIP (`--assay hichip`), replacing the PEDDEP HiLOW WDL pipeline (see docs/hichip.md).
+
+- Samplesheet with `mark` and `control` columns as for ChIP-seq; INPUT HiChIP libraries are
+  processed once and serve as the peak-calling control; optional `peaks` column for loop anchors.
+- bwa-mem2 `-5SP` and pairtools (parse, dedup) instead of HiC-Pro; lanes are split into chunks of
+  `--split_fastq` read pairs that align in parallel. bwa-mem2 index built on first use.
+- Juicer Tools 1.22.01 `.hic` maps and FitHiChIP 10 loops with the HiLOW settings, from the HiLOW
+  image; loop tracks at q < 0.01 / 0.05 / 0.1 in the HiLOW layout.
+- MACS3 peaks on the read ends against the INPUT replace HiChIP-Peaks; CPM coverage bigWig.
+- PEDDEP graded HiChIP QC report: contact fractions use deduplicated contacts throughout, the
+  duplicate rate is reported, and long-range cis contacts (>= 20 kb) are graded as in HiLOW.
+- `test_hichip` profile (nf-core HiCAR reads on human chr22) and CI.
+- ATAC-seq, ChIP-seq and CUT&RUN results are unchanged from v0.2.0.
+
 ## v0.2.0 (2026-10-20)
 
 ChIP-seq and CUT&RUN (`--assay chip`, `--assay cutrun`), a rewrite of the PEDDEP SEAseq/PEASEQ

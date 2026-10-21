@@ -29,7 +29,7 @@ jobs:
       matrix:
         NXF_VER: ["24.10.2", "latest-stable"]
         mode: ["stub", "docker"]
-        profile: ["test", "test_chip"]
+        profile: ["test", "test_chip", "test_hichip"]
     steps:
       - uses: actions/checkout@v5
       - uses: nf-core/setup-nextflow@v2
