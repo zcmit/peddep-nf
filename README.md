@@ -73,7 +73,7 @@ nextflow run zcmit/peddep-nf -c conf/examples/awsbatch.config --genome GRCh38 \
     --input s3://bucket/samples.csv --outdir s3://bucket/results -work-dir s3://bucket/work
 ```
 
-Per-task ceilings: `--max_cpus`, `--max_memory`, `--max_time` on the command line, or `process.resourceLimits` in a config. Re-running with `-resume` reuses every finished task.
+Per-task ceilings: `--max_cpus`, `--max_memory`, `--max_time` on the command line, or `process.resourceLimits` in a config. Re-running with `-resume` reuses every finished task, as long as its files are still in the work directory. Some institutional profiles, `stjude` among them, set `cleanup = true`, which deletes the work directory's task files once a run succeeds. Resuming after a failure still works with them. To keep the files after success, put `cleanup = false` in your own config.
 
 ## Testing
 

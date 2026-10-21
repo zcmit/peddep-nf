@@ -11,8 +11,8 @@ HiChIP (`--assay hichip`), replacing the PEDDEP HiLOW WDL pipeline (see docs/hic
 - Juicer Tools 1.22.01 `.hic` maps and FitHiChIP 10 loops with the HiLOW settings, from the HiLOW
   image; loop tracks at q < 0.01 / 0.05 / 0.1 in the HiLOW layout.
 - MACS3 peaks on the read ends against the INPUT replace HiChIP-Peaks; CPM coverage bigWig.
-- PEDDEP graded HiChIP QC report: contact fractions use deduplicated contacts throughout, and the
-  duplicate rate is reported.
+- PEDDEP graded HiChIP QC report: contact fractions use deduplicated contacts throughout, the
+  duplicate rate is reported, and long-range cis contacts (>= 20 kb) are graded as in HiLOW.
 - `test_hichip` profile (nf-core HiCAR reads on human chr22) and CI.
 - ATAC-seq, ChIP-seq and CUT&RUN results are unchanged from v0.2.0.
 
